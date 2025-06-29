@@ -1,2 +1,0 @@
-/usr/bin/ar qc libelevator_modules.a  CMakeFiles/elevator_modules.dir/elevator_controller.cpp.o CMakeFiles/elevator_modules.dir/map_switch.cpp.o CMakeFiles/elevator_modules.dir/robot_elevator_client.cpp.o
-/usr/bin/ranlib libelevator_modules.a

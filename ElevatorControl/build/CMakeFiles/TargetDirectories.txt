@@ -1,6 +1,0 @@
-/home/orangepi/ElevatorControl/build/CMakeFiles/rebuild_cache.dir
-/home/orangepi/ElevatorControl/build/CMakeFiles/edit_cache.dir
-/home/orangepi/ElevatorControl/build/CMakeFiles/ElevatorControl.dir
-/home/orangepi/ElevatorControl/build/src/CMakeFiles/rebuild_cache.dir
-/home/orangepi/ElevatorControl/build/src/CMakeFiles/edit_cache.dir
-/home/orangepi/ElevatorControl/build/src/CMakeFiles/elevator_modules.dir
