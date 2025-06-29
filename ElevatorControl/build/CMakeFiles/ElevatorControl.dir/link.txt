@@ -1,0 +1,1 @@
+/usr/bin/c++     CMakeFiles/ElevatorControl.dir/main.cpp.o  -o ElevatorControl  src/libelevator_modules.a -lmodbus -lpthread 

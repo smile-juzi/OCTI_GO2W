@@ -1,0 +1,34 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../include/elevator_controller.hpp
+modbus/modbus.h
+-
+string
+-
+iostream
+-
+cstring
+-
+unistd.h
+-
+mutex
+-
+thread
+-
+stdexcept
+-
+atomic
+-
+fcntl.h
+-
+
+/home/orangepi/ElevatorControl/src/elevator_controller.cpp
+elevator_controller.hpp
+/home/orangepi/ElevatorControl/src/elevator_controller.hpp
+
