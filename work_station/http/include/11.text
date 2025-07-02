@@ -1,0 +1,160 @@
+class PGMReceiver {
+private:
+    std::atomic<bool> running_{false};
+    std::thread listener_thread_;
+    std::mutex queue_mutex_;
+    std::queue<PGMData> data_queue_;
+    int server_fd_{-1};
+
+    // 线程安全的数据入队
+    void enqueue_data(const PGMData& data) {
+        std::lock_guard<std::mutex> lock(queue_mutex_);
+        data_queue_.push(data);
+    }
+
+    // 接收线程主循环
+    void listener_loop() {
+        struct sockaddr_in client_addr;
+        socklen_t addr_len = sizeof(client_addr);
+
+        while (running_) {
+            // 接受新连接
+            int client_fd = accept(server_fd_, 
+                                 (struct sockaddr*)&client_addr,
+                                 &addr_len);
+            if (client_fd < 0) {
+                if (running_) perror("accept failed");
+                continue;
+            }
+
+            // 为每个连接创建独立处理线程
+            std::thread([this, client_fd, client_addr]() {
+                handle_client(client_fd, client_addr);
+            }).detach();
+        }
+    }
+
+    // 客户端处理逻辑
+    void handle_client(int client_fd, sockaddr_in client_addr) {
+        try {
+            PGMHeader header;
+            
+            // 接收包头
+            if (!receive_all(client_fd, &header, sizeof(PGMHeader))) {
+                throw std::runtime_error("Header接收失败");
+            }
+
+            // 验证魔数
+            if (ntohl(header.magic) != 0x50350000) {
+                throw std::runtime_error("无效的PGM格式");
+            }
+
+            // 转换字节序
+            PGMData pgm_data;
+            pgm_data.header = {
+                .magic      = ntohl(header.magic),
+                .width      = ntohl(header.width),
+                .height     = ntohl(header.height),
+                .max_gray   = ntohl(header.max_gray),
+                .data_size  = ntohl(header.data_size),
+                .map_number = ntohl(header.map_number),
+                .datalen    = ntohl(header.datalen),
+                .resolution = header.resolution  // float直接拷贝
+            };
+
+            // 分配像素内存
+            //pgm_data.pixel_data = new uint8_t[pgm_data.header.data_size];
+            auto* pgm_data.pixel = static_cast<PGMData*>(std::malloc(data_size));
+            // 接收像素数据
+            if (!receive_all(client_fd, pgm_data.pixel_data, 
+                           pgm_data.header.data_size)) {
+                delete[] pgm_data.pixel_data;
+                throw std::runtime_error("像素数据接收失败");
+            }
+
+            // 存入队列
+            enqueue_data(pgm_data);
+
+        } catch (const std::exception& e) {
+            std::cerr << "客户端处理错误: " << e.what() << std::endl;
+        }
+        close(client_fd);
+    }
+
+    // 可靠接收函数
+    bool receive_all(int fd, void* buffer, size_t length) {
+        size_t received = 0;
+        while (received < length && running_) {
+            ssize_t n = recv(fd, static_cast<char*>(buffer) + received, 
+                           length - received, 0);
+            if (n <= 0) return false;
+            received += n;
+        }
+        return received == length;
+    }
+
+public:
+    PGMReceiver() = default;
+    ~PGMReceiver() { stop(); }
+
+    // 启动服务
+    bool start(uint16_t port) {
+        server_fd_ = socket(AF_INET, SOCK_STREAM, 0);
+        if (server_fd_ < 0) {
+            perror("socket创建失败");
+            return false;
+        }
+
+        // 设置端口复用
+        int opt = 1;
+        setsockopt(server_fd_, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+        // 绑定端口
+        struct sockaddr_in addr;
+	memset(&addr, 0, sizeof(addr)); // 
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons(port);
+	addr.sin_addr.s_addr = INADDR_ANY;
+        if (bind(server_fd_, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+            perror("绑定端口失败");
+            return false;
+        }
+
+        // 开始监听
+        if (listen(server_fd_, 5) < 0) {
+            perror("监听失败");
+            return false;
+        }
+
+        running_ = true;
+        listener_thread_ = std::thread(&PGMReceiver::listener_loop, this);
+        return true;
+    }
+
+    // 停止服务
+    void stop() {
+        if (running_) {
+            running_ = false;
+            shutdown(server_fd_, SHUT_RDWR);
+            close(server_fd_);
+            if (listener_thread_.joinable()) {
+                listener_thread_.join();
+            }
+        }
+    }
+
+    // 获取数据（线程安全）
+    bool get_data(PGMData& out_data) {
+        std::lock_guard<std::mutex> lock(queue_mutex_);
+        if (data_queue_.empty()) return false;
+
+        out_data = data_queue_.front();
+        data_queue_.pop();
+        return true;
+    }
+
+    // 释放数据内存
+    static void free_data(PGMData& data) {
+        delete[] data.pixel_data;
+    }
+};

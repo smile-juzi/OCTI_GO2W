@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Root>
+    <path Seq="1" Type="ulong">
+        <x Type="double">4.94216234144785305</x>
+        <y Type="double">-1.13749600482584928</y>
+        <yaw Type="double">-0.017465312812244446</yaw>
+        <keypointflag Type="uint">0</keypointflag>
+    </path>
+    <path Seq="1" Type="ulong">
+        <x Type="double">4.94216234144785305</x>
+        <y Type="double">-3.13749600482584928</y>
+        <yaw Type="double">-0.017465312812244446</yaw>
+        <keypointflag Type="uint">0</keypointflag>
+    </path>
+        <path Seq="1" Type="ulong">
+        <x Type="double">4.94216234144785305</x>
+        <y Type="double">-1.13749600482584928</y>
+        <yaw Type="double">-0.017465312812244446</yaw>
+        <keypointflag Type="uint">0</keypointflag>
+    </path>
+        <path Seq="1" Type="ulong">
+        <x Type="double">0</x>
+        <y Type="double">0</y>
+        <yaw Type="double">-0.017465312812244446</yaw>
+        <keypointflag Type="uint">0</keypointflag>
+    </path>
+</Root>
