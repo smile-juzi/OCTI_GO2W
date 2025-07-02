@@ -38,7 +38,7 @@
 
 	<group if="$(arg localization_en)">
 		<node pkg="fast_lio_global" type="global_localization.py" name="global_localization1" output="screen">
-			<env name="PYTHONPATH" value="/home/orangepi/.local/lib/python3.8/site-packages"/>
+			<env name="PYTHONPATH" value="/home/elf/.local/lib/python3.8/site-packages"/>
 		</node>
 		<node pkg="fast_lio_global" type="transform_fusion.py" name="transform_fusion1" output="screen" />
 		<node pkg="fast_lio_global" type="publish_initial_pose.py" name="publish_initial_pose2" args="0 -0.5 0 0 0 0" output="screen"/>
